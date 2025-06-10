@@ -1,0 +1,11 @@
+[ req ]
+default_bits        = 4096
+default_md          = sha256
+prompt              = no
+encrypt_key         = no
+distinguished_name  = dn
+
+[ dn ]
+CN = OpenSSL Cipher Key
+O = BIST
+C = US

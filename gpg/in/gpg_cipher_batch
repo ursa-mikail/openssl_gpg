@@ -1,0 +1,9 @@
+%echo Generating GPG Cipher Key
+Key-Type: RSA
+Key-Length: 4096
+Name-Real: BIST Cipher
+Name-Email: cipher@example.com
+Expire-Date: 1y
+%no-protection
+%commit
+%echo done

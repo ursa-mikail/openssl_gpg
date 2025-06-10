@@ -1,0 +1,9 @@
+%echo Generating a signing key
+Key-Type: RSA
+Key-Length: 4096
+Name-Real: BIST Signer
+Name-Email: sign@example.com
+Expire-Date: 1y
+%no-protection
+%commit
+%echo Done
