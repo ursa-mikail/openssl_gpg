@@ -10,6 +10,7 @@ x509_extensions     = v3_ca
 CN = OpenSSL Signing Key
 O = BIST
 C = US
+emailAddress = ursa@walnuss.com
 
 [ v3_ca ]
 keyUsage = digitalSignature

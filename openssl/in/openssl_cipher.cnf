@@ -9,3 +9,5 @@ distinguished_name  = dn
 CN = OpenSSL Cipher Key
 O = BIST
 C = US
+emailAddress = ursa@walnuss.com
+
