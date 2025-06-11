@@ -1,0 +1,89 @@
+#!pip install pycryptodome pgpy
+
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.backends import default_backend
+
+with open("openssl_sign_key.pem", "rb") as f:
+    key_data = f.read()
+
+key = load_pem_private_key(key_data, password=None, backend=default_backend())
+
+numbers = key.private_numbers()
+
+print(f"Modulus (n): {hex(numbers.public_numbers.n)}")
+print(f"Public Exponent (e): {hex(numbers.public_numbers.e)}")
+print(f"Private Exponent (d): {hex(numbers.d)}")
+print(f"Prime 1 (p): {hex(numbers.p)}")
+print(f"Prime 2 (q): {hex(numbers.q)}")
+print(f"Exponent 1 (d mod (p-1)): {hex(numbers.dmp1)}")
+print(f"Exponent 2 (d mod (q-1)): {hex(numbers.dmq1)}")
+print(f"Coefficient (inverse of q mod p): {hex(numbers.iqmp)}")
+
+# Example usage:
+
+# 1. Load OpenSSL private key PEM
+openssl_priv = load_openssl_private_key("openssl_sign_key.pem")
+
+# 2. Extract public key PEM from it
+openssl_pub_pem = get_public_key_from_private(openssl_priv)
+print(openssl_pub_pem.decode())
+
+# 3. Load GPG private key (ASCII-armored)
+gpg_priv = load_gpg_private_key("gpg_sign_priv.asc")
+
+# 4. Get GPG public key from private key
+gpg_pub = get_gpg_public_key(gpg_priv)
+print(str(gpg_pub))
+
+# 5. Load GPG public key
+gpg_pub2 = load_gpg_public_key("gpg_sign_pub.asc")
+print(str(gpg_pub2))
+
+import pgpy
+
+with open("gpg_sign_priv.asc", "r") as f:
+    key_data = f.read()
+
+key, _ = pgpy.PGPKey.from_blob(key_data)
+
+# For RSA keys, access key material:
+#for subkey in key.subkeys.values():
+    # subkey.key material object
+    # e.g. subkey._key._key material for RSA params
+    # pgpy currently doesn't expose direct raw params easily,
+    # but you can get fingerprint, keysize etc.
+
+print(f"Key fingerprint: {key.fingerprint}")
+print(f"Key algorithm: {key.key_algorithm}")
+print(f"Key size: {key.key_size}")
+
+"""
+Modulus (n): 0xca63b231b1f3178c878aeb126a81e6962578041efb5afcd5fb5041fbc8b9a0e629dbb0166bf22777e3d102b223953f33e9e7d7c1185e79bbabe6374c9b9aa27f4d8a374faa8f169d83091d5bf5a4c0abf36ea145c507ec039177e7f3ef12c75b592f7e14c0b7d336f2417efd9394b144d62daa41758b25a6cfedf9734c14bd9723f00ef244995ef2ac3695fafbe104aeed07392278bb915533ff908fd6da8ae98cff7f495222c4100a50db8508cf2c6f367aadf53423d12a7d33248829c566701ab1bbcffbc89ac05d35e35a33145bba7553b9c2513e9688ad1f83f610afa69faab17f20a300576eb2206a81d32a46225499323b99a14c1ff1b901305d3a74b2a05ddba8ad3a6b47aa1e9e8d47531e09573f02b5bab42462a7d3b8f01a0603d72a9a5076c9397c3dd0bf3a20a2cff6b7d9825287abbbaba2cf710835ff8fd1e627870017e78333b9856e24821a7038268228a19ad9158c3a3add70669f22c876b2119ce674f4dee6197343a80814dd7815c668bd0a322dfbe3c7b0e504c79243f584399236418c070b91d4576f2e8945485c53db0c7ff6992c69a43999624a711ca91b7df9a8998573c420040c18a285f0eefcf479c561826390574da0631d37e216222bbaabba939ea80ee33ac06972c25085deeb509919da4730d920b8e59342c2649c262f38c5bde92a7741e2586a35570fd392d8e527ca4aff41556e1b2f
+Public Exponent (e): 0x10001
+Private Exponent (d): 0x19724f85500a707b8acf3c9f24251108efcd17378e02f2a734e1f269e5e2f107ff5b4fd881da007c6278750e50cb031753e1828f14b14c3cfc7005a3ec2c9521cc6e04664fdb8dcc601d5543aaaefc4aa260d6861f2fcfcce30d606c9b32913e3b086da1ce594e852a1072170fe73222a58b384ce2aa8c215d235ea9d0770b1f65b5592bbcd44bcbd73b45c038cb21fb9c71bc0d4980cbd51aa497587e7b1bdc218e3e42c9c0f545cf063b938e77fdee3dbb4f03f57a4b623c3ba1ec3cd444fcf35e456ef10957ebb7cc7eb96892b6b5caeaac0072969bf6b34db319cd1f48a3eaa24689a3f4f70943fc2f680354dd5c93a66f5a6f0688bbbb78b75d8d5b3c30c01be535aac48074926fe604ef05acda41aadccd0892d3c218cd77b9305292752ee895f645485f07ccd623b47ddb88c5f651f68e8f036292bfcb3decfa5515c7c0dc88013473dbcb441dab438670e1f53c4acfa75d679abffb57912874c5647a7f7ae7031d0b9246bbecc74a4b15d3f14864339d81a138a4694252dc801476b2a44a5e283c6f23c88ada5341ec5110a25c36a67036347e51ecdd053ccbef5d738ebac5067533531f7e5cbf505983d4af6063de9d76dbe0bb616135d9804962d9344f5d91b9dd3105651171cc96a85059a6bc6b905049423d72b97bc56902ef9cce7ca0d542e43857d959fac50a37ed1ac8a89c9e508824118d6678d277108481
+Prime 1 (p): 0xe3a6955e8f42947afadbf44f668da7bffe614c783cfc62ae3cb2a24442fff6aa925c99cffd57e98c4755c96bbb4d374c412b08d55b100040da05c587630cf490c2ecaf90844cbc59e726cca35a79d08c9979cf84eb13d89fd988d154e38d53b6bad116867b3e56fb0da4b02ddb566a987f7824545f227cbe87be3b15e9d1c64cdb64fe11b0db62d94f14bcf8dadddee80011c1abdd7861b8cfb5dd16493e6e27da7f72e66450248b54bd3f30c67e45ffde27f0f5883dbf651700ad43dd29a4ff38cb3a6040bbd7ad41974c4719d13c67c75ec212aee9d944fb5c5e6920d7f01c8aa40c41207a491bf958cecdfbd086a4aaa64ed4740963cfaa19996fed3071bd
+Prime 2 (q): 0xe397caf69b6a514c58a0d9509c573ca06226d4d076440c9caa45db4fa0f90a72a43d8fea0d0ab2807419e3b35d51d3c11f4d717283cf691456e9182c9d70f747c3e913751afa4fa23b14a8dbb6e0c4dd11f08fe7cabed6a91a82764eb0b6f87b3eaa33eb87ebbd882e7e71f3e32bd6912945f0d85994187578a8a61021e3b0e6da96751551790b1d5ff0f8aaa59ecd8d19c84072e452010ac3a1d145935dba64b786fe8cd3acb40502cf46d1819ee42101c694a749395ace32524c40bfa7b9c1a2907075bf10da5e78315ac79c0f44d78f62883fb06c2389a805b6234cab0166df1866b65ee350386116f0d1620031a014c67637e0795dbff8ac7b6984fab15b
+Exponent 1 (d mod (p-1)): 0x53ddfb096b1dcc35c255661c1a5bf580f5e64295c961f1b8df03b064158ad704e006dd6392a1e0989d6f2d55531b8f53b86e7242a7d9ad3e37140941676c4e6d46628c0b61b22371bb86bfbd2e87d21cfa2db615f1c4cdf995daa1c3f4510c96351cf27f78c7eea36ed34d549789ae9b9fda5308024462508f11b612cca14bbce4d6c0032474ae66008c53521acfc25f162774822c853cfb290a86f8bee31111fd9d16676a6d5c09389ebfb8e8677cc256c5c02fb4918b0163080ccd039d63fbe2a07c5119881a5ce9dd236cce46174ae45834874d893952008876ffa3e9e9bb9a17f5abc89b4473d9d8add794fdad9cdc8188691c9698fed85bb5fb561692d
+Exponent 2 (d mod (q-1)): 0x78f10ecfe162abf5101bd99f7694fd08955fe1332dc5979620fda23f3c615ae5f4d52a06cc0b6533d17e787bb61967977694e6b65dc8f823f0d3491f5c42cd84fb5c7e147ad38d41be778a0bc7b0c5ac5c7e235a9f68ae158a9acd579f9c7b8ab2902baafbbd90282fdccd9d3698f31a8c7e38301fda0ced4fc2ff0c0f96394953db2438c1e4babd4f607423ea82eae4125151be3c0a3fb782a218dd0a24828a46e49b9c2657de09d3a66611aaf9ce6ca3ceecebc08393f782d22ce7337163cabc22594098d9d1d0e5ba046d9246a2e491b36087c7ae8f6bf537a3c43a579d15177496104f782806edc10d13972a5734a4159a78b2f68b951a063e46a27dbd85
+Coefficient (inverse of q mod p): 0x4360dea26155c2c805127e3a437dd75016333b90e63a29c05d96e172c11168f4104e3efabfbe3aab5538963916c0706911a1c29b63a46b0e0735bc0cf211220ae2b0a6e482a5fa9006f9fafecc69b113433a48f2f111991e6a8fbd26ff984d0b596ead19f144a0d42330bb943d722e1b7c9761c3700720b1338e8e62291ac5212db693d222070a95137e6aaeeb6a0cffc153ca5ccc4071439e29073b15b6faf7f6c350dbc91293ed3c816dac4af484dcc194b1d51a3ee06f1c92e857dedf4c84dfd8d9146edd490f92d3640ae4d5323d1a2453576151d87434e7f3095edf28c56c017a354158a09f63cefd2c6ff8f192e0d54b3c4ac96bf829de187dfc23c350
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w...y8CAwEAAQ==
+-----END PUBLIC KEY-----
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+xsFNBGhIYpY....21Mddo=
+=Zzg8
+-----END PGP PUBLIC KEY BLOCK-----
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQINBGhIYpY ...1Mddo=
+=0YSt
+-----END PGP PUBLIC KEY BLOCK-----
+
+Key fingerprint: 0A627B97663F8AF12ADE83FDEA060A34D72D8B8A
+Key algorithm: 1
+Key size: 4096
+"""
+
